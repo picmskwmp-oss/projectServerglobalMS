@@ -12,6 +12,9 @@
   const STYLE_ID = 'rjmSrvStyle';
   const LOADING_ID = 'rjmSrvLoading';
   const LOADING_DURATION = 4000;
+  const AMOUNT_MIN_STEP = 12500;
+  const AMOUNT_MAX_STEP = 98000;
+  const AMOUNT_ANIMATION_TIME = 900;
 
   const LOADING_CSS = `
   html.rjm-ai-loading,
@@ -292,10 +295,58 @@
     const btn = root.querySelector('#rjmSrvBtn');
     const box = root.querySelector('#rjmSrvBox');
     const serverCards = root.querySelectorAll('.rjm-server');
+    const amountElements = root.querySelectorAll('.rjm-server__amount');
 
     if (!btn || !box) return;
 
     let loadingTimer = 0;
+
+    const rupiahFormatter = new Intl.NumberFormat('id-ID');
+
+    const animateAmount = (element, startValue, endValue) => {
+      const startedAt = performance.now();
+
+      const updateFrame = (currentTime) => {
+        const progress = Math.min(
+          (currentTime - startedAt) / AMOUNT_ANIMATION_TIME,
+          1
+        );
+        const easedProgress = 1 - Math.pow(1 - progress, 3);
+        const currentValue = Math.round(
+          startValue + (endValue - startValue) * easedProgress
+        );
+
+        element.textContent = `Rp ${rupiahFormatter.format(currentValue)}`;
+        element.dataset.currentAmount = String(currentValue);
+
+        if (progress < 1) {
+          window.requestAnimationFrame(updateFrame);
+        }
+      };
+
+      window.requestAnimationFrame(updateFrame);
+    };
+
+    const startMovingAmount = (element, index) => {
+      const initialValue = Number(element.textContent.replace(/\D/g, ''));
+      element.dataset.currentAmount = String(initialValue);
+
+      const move = () => {
+        const currentValue = Number(element.dataset.currentAmount);
+        const randomStep = Math.floor(
+          AMOUNT_MIN_STEP + Math.random() * (AMOUNT_MAX_STEP - AMOUNT_MIN_STEP)
+        );
+
+        animateAmount(element, currentValue, currentValue + randomStep);
+
+        const nextMovement = 1800 + Math.random() * 1400;
+        window.setTimeout(move, nextMovement);
+      };
+
+      window.setTimeout(move, 450 + index * 180);
+    };
+
+    amountElements.forEach(startMovingAmount);
 
     const setOpen = (open) => {
       box.classList.toggle('on', open);
