@@ -230,7 +230,7 @@
 
     .Mauslot-ai-loader__visual {
       transform: scale(.9);
-      margin-bottom: 18px;
+      margin-bottom: 23px;
     }
   }
 
